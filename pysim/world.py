@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+import random
 
 
 @dataclass(frozen=True)
@@ -71,20 +72,64 @@ class World:
         return self.runway_a.contains(x, y, pad) or self.runway_b.contains(x, y, pad)
 
 
-def build_world() -> World:
-    """One grassy island, takeoff on the west strip, landing on the east."""
+def generate_flight_path(
+    island: tuple[float, float, float, float],
+    runway_a: Runway,
+    runway_b: Runway,
+    rng: random.Random,
+) -> tuple[Gate, ...]:
+    """Lay 3–5 gates from after takeoff to a final for Runway B.
+
+    X always moves east so a beginner can follow the rings without looping.
+    Y wanders, but not so far that a single turn cannot keep up.
+    """
+    _ix, iy, _iw, ih = island
+    y_lo, y_hi = iy + 140.0, iy + ih - 140.0
+    count = rng.randint(3, 5)
+
+    a_end = runway_a.cx + runway_a.length / 2
+    b_start = runway_b.cx - runway_b.length / 2
+    first_x = a_end + rng.uniform(70.0, 130.0)
+    last_x = b_start - rng.uniform(30.0, 90.0)
+    first_y = max(y_lo, min(y_hi, runway_a.cy + rng.uniform(-50.0, 50.0)))
+    last_y = max(y_lo, min(y_hi, runway_b.cy + rng.uniform(-24.0, 24.0)))
+
+    xs = [first_x]
+    span = last_x - first_x
+    for i in range(1, count - 1):
+        t = i / (count - 1)
+        xs.append(first_x + span * t + rng.uniform(-35.0, 35.0))
+    xs.append(last_x)
+    for i in range(1, len(xs) - 1):
+        xs[i] = min(xs[i], last_x - 50.0 * (len(xs) - 1 - i))
+        xs[i] = max(xs[i], xs[i - 1] + 50.0)
+    xs[-1] = last_x
+
+    ys = [first_y]
+    for i in range(1, count - 1):
+        step = rng.uniform(-220.0, 220.0)
+        # Mix a little toward the landing centerline so the last turn is gentle.
+        toward_b = (last_y - ys[-1]) * 0.25
+        y = ys[-1] + step + toward_b
+        ys.append(max(y_lo, min(y_hi, y)))
+    ys.append(last_y)
+
+    gates = []
+    for i, (x, y) in enumerate(zip(xs, ys)):
+        radius = rng.uniform(68.0, 86.0)
+        gates.append(Gate(x, y, radius, str(i + 1)))
+    return tuple(gates)
+
+
+def build_world(seed: int | None = None) -> World:
+    """One grassy island, takeoff west, a fresh path, landing east."""
+    rng = random.Random(seed)
     width, height = 2400.0, 1400.0
     island = (80.0, 120.0, 2240.0, 1160.0)
 
     runway_a = Runway(cx=420.0, cy=720.0, length=520.0, width=78.0, heading=0.0)
     runway_b = Runway(cx=1980.0, cy=980.0, length=560.0, width=78.0, heading=0.0)
-
-    gates = (
-        Gate(780.0, 700.0, 70.0, "1"),
-        Gate(1120.0, 480.0, 75.0, "2"),
-        Gate(1520.0, 520.0, 75.0, "3"),
-        Gate(1680.0, 980.0, 80.0, "4"),
-    )
+    gates = generate_flight_path(island, runway_a, runway_b, rng)
     return World(
         width=width,
         height=height,

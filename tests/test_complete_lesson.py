@@ -40,7 +40,7 @@ def _pilot(flight: Flight) -> tuple[float, float]:
         target = 0.55 if plane.altitude < 50.0 else 0.35
         return turn, _want_throttle(plane.throttle, target)
 
-    target_x = world.runway_b.cx + 80.0
+    target_x = world.runway_b.cx + 120.0
     target_y = world.runway_b.cy
     turn = _turn_toward(plane.heading, target_x, target_y, plane.x, plane.y)
     if not plane.airborne:
@@ -51,7 +51,7 @@ def _pilot(flight: Flight) -> tuple[float, float]:
 
 
 def test_scripted_pilot_completes_takeoff_path_landing():
-    flight = Flight()
+    flight = Flight(seed=5)
     dt = 1 / 60
     for _ in range(60 * 120):
         turn, throttle = _pilot(flight)

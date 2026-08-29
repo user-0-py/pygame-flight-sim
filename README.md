@@ -3,11 +3,11 @@
 A small **top-down airplane demo** built with Python. The point is not a real
 flight model — it is a personal project you can read in an evening.
 
-You take off from the west runway, fly through four numbered gates, then land
-on the east runway.
+You take off from the west runway, fly through a **new random path** of
+numbered gates (Press **R** for another route), then land on the east runway.
 
 - **`pysim/`** — where the plane is, how it moves, whether a landing counts.
-- **`render/`** — Pygame drawing (island, runways, triangle plane, HUD).
+- **`render/`** — Pygame drawing (island, runways, top-down airplane sprite, HUD).
 - **`main.py`** — the loop: keys → simulate one step → draw.
 
 ## Setup guide
@@ -116,7 +116,7 @@ You should see all tests pass, including a scripted flight that finishes takeoff
 | `W` / `Up` | Add throttle |
 | `S` / `Down` | Cut throttle |
 | `A` / `D` or arrows | Turn |
-| `R` | Restart |
+| `R` | Restart with a new random path |
 | `Esc` | Quit |
 
 Hold **W** on Runway A until you lift off (around speed 40). Steer through

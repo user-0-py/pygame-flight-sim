@@ -23,8 +23,9 @@ FPS = 60
 
 
 class Flight:
-    def __init__(self) -> None:
-        self.world: World = build_world()
+    def __init__(self, seed: int | None = None) -> None:
+        self.seed = seed
+        self.world: World = build_world(seed)
         self.plane: Aircraft = spawn_on_runway_a(self.world)
         self.phase = "takeoff"
         self.next_gate = 0
@@ -33,7 +34,8 @@ class Flight:
         self.fail_reason = ""
 
     def reset(self) -> None:
-        self.__init__()
+        # A new seed each restart so the route is different.
+        self.__init__(seed=None if self.seed is None else self.seed + 1)
 
     def update(self, dt: float, turn: float, throttle_delta: float) -> None:
         if self.outcome != "playing":

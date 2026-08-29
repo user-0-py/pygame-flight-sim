@@ -9,6 +9,7 @@ import pygame
 from pysim.aircraft import Aircraft
 from pysim.world import Runway, World
 from render.camera import Camera
+from render.plane_sprite import draw_plane
 
 WATER = (58, 122, 168)
 ISLAND = (94, 148, 78)
@@ -19,10 +20,6 @@ PAINT = (236, 232, 214)
 GATE_NEXT = (250, 208, 80)
 GATE_DONE = (210, 220, 200)
 GATE_WAIT = (230, 236, 244)
-SHADOW = (40, 70, 50)
-PLANE = (244, 240, 228)
-PLANE_EDGE = (40, 44, 52)
-WING = (196, 62, 52)
 HUD_BG = (18, 24, 32)
 HUD_TEXT = (236, 238, 232)
 HINT = (255, 232, 160)
@@ -104,9 +101,12 @@ def _dashed_line(
 
 
 def _draw_path(surface: pygame.Surface, camera: Camera, world: World, next_gate: int) -> None:
-    points = [(g.x, g.y) for g in world.gates]
+    _, a_east = world.runway_a.ends()
+    b_west, _ = world.runway_b.ends()
+    points = [a_east, *[(g.x, g.y) for g in world.gates], b_west]
     if len(points) >= 2:
         for i in range(len(points) - 1):
+            # Segment 0 is takeoff → gate 1; after that, index matches gate pairs.
             color = GATE_DONE if i < next_gate else GATE_NEXT
             _dashed_line(surface, camera, points[i], points[i + 1], color, 16, 10, 2)
 
@@ -121,41 +121,7 @@ def _draw_path(surface: pygame.Surface, camera: Camera, world: World, next_gate:
         pos = camera.to_screen(gate.x, gate.y)
         r = max(8, int(camera.scale(gate.radius)))
         pygame.draw.circle(surface, color, pos, r, max(2, int(3 * camera.zoom)))
-        label = font.render(gate.label, True, HUD_BG)
         surface.blit(label, (pos[0] - label.get_width() // 2, pos[1] - label.get_height() // 2))
-
-
-def draw_plane(surface: pygame.Surface, plane: Aircraft, camera: Camera) -> None:
-    hx, hy = math.cos(plane.heading), math.sin(plane.heading)
-    wx, wy = -hy, hx
-    shadow_off = 6 + plane.altitude * 0.08
-    scale = 16 + plane.altitude * 0.04
-
-    def body(ox: float, oy: float, s: float):
-        nose = (plane.x + ox + hx * s * 1.5, plane.y + oy + hy * s * 1.5)
-        left = (plane.x + ox - hx * s * 0.9 + wx * s * 0.7, plane.y + oy - hy * s * 0.9 + wy * s * 0.7)
-        right = (plane.x + ox - hx * s * 0.9 - wx * s * 0.7, plane.y + oy - hy * s * 0.9 - wy * s * 0.7)
-        return [camera.to_screen(*nose), camera.to_screen(*left), camera.to_screen(*right)]
-
-    pygame.draw.polygon(surface, SHADOW, body(shadow_off, shadow_off, scale * 0.9))
-    pygame.draw.polygon(surface, PLANE, body(0, 0, scale))
-    pygame.draw.polygon(surface, PLANE_EDGE, body(0, 0, scale), 2)
-
-    wing_l = (
-        plane.x + wx * scale * 1.15,
-        plane.y + wy * scale * 1.15,
-    )
-    wing_r = (
-        plane.x - wx * scale * 1.15,
-        plane.y - wy * scale * 1.15,
-    )
-    pygame.draw.line(
-        surface,
-        WING,
-        camera.to_screen(*wing_l),
-        camera.to_screen(*wing_r),
-        max(2, int(3 * camera.zoom)),
-    )
 
 
 def draw_hud(
@@ -183,13 +149,13 @@ def draw_hud(
     bar = pygame.Rect(16, surface.get_height() - 70, surface.get_width() - 32, 52)
     pygame.draw.rect(surface, HUD_BG, bar, border_radius=10)
     surface.blit(small.render(hint, True, HINT), (28, bar.y + 8))
-    help_line = "W/S throttle   A/D turn   R restart   Esc quit"
+    help_line = "W/S throttle   A/D turn   R new path   Esc quit"
     if next_gate < gate_count and phase == "path":
         help_line = f"Next gate {next_gate + 1}/{gate_count}    " + help_line
     surface.blit(small.render(help_line, True, HUD_TEXT), (28, bar.y + 28))
 
     if outcome == "success":
-        _banner(surface, "Landed on Runway B", "Press R to fly it again.", GOOD)
+        _banner(surface, "Landed on Runway B", "Press R for a new random path.", GOOD)
     elif outcome == "fail":
         _banner(surface, "Try that again", fail_reason + "  Press R.", BAD)
 
