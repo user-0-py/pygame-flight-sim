@@ -136,30 +136,17 @@ Altitude is one number. Higher means a bigger plane and a longer shadow.
 - **Window opens then closes** — look at the terminal for a traceback; make
   sure you started `python main.py` from the project root.
 
-## Publish to GitHub
+## GitHub
 
-This cloud session is signed into **Origin**, not GitHub, so the GitHub copy
-has to be created from a machine where you are logged in (`gh auth login`).
-GitHub user: **user-0-py**.
+Public/private copies live at **[user-0-py/pygame-flight-sim](https://github.com/user-0-py/pygame-flight-sim)**.
 
-From a clone of this repo:
+If the GitHub repo does not exist yet, from a clone with `gh` signed in:
 
 ```bash
 gh auth login
 gh repo create user-0-py/pygame-flight-sim --private --source=. --remote=github --push
-```
-
-That creates a **private** GitHub repo, adds a `github` remote, and pushes the
-current branch. To also put `main` on GitHub:
-
-```bash
 git push github main
 ```
-
-You can change visibility later in the GitHub repo settings. Browse the
-Origin copy at
-[https://cursor.com/codebase/ashwin-tewary/pygame-flight-sim](https://cursor.com/codebase/ashwin-tewary/pygame-flight-sim)
-(private by default; change that on that page).
 
 ## Ideas to extend
 
