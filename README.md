@@ -116,18 +116,6 @@ Altitude is one number. Higher means a bigger plane and a longer shadow.
 - **Window opens then closes** — look at the terminal for a traceback; make
   sure you started `python main.py` from the project root.
 
-## GitHub
-
-Public/private copies live at **[user-0-py/pygame-flight-sim](https://github.com/user-0-py/pygame-flight-sim)**.
-
-If the GitHub repo does not exist yet, from a clone with `gh` signed in:
-
-```bash
-gh auth login
-gh repo create user-0-py/pygame-flight-sim --private --source=. --remote=github --push
-git push github main
-```
-
 ## Ideas to extend
 
 - A second path that starts from Runway B.
