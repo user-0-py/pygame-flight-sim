@@ -31,27 +31,7 @@ On Windows, install Python from [python.org](https://www.python.org/downloads/) 
 
 ### 2. Get the code
 
-**Origin (this project’s remote today):**
-
-```bash
-# Install the Origin CLI
-curl -fsSL https://downloads.cursor.com/origin/install.sh | sh
-
-# If `origin` is not found:
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-
-# Sign in (also sets up git credentials)
-origin auth login
-
-# Clone
-origin repo clone ashwin-tewary/pygame-flight-sim
-cd pygame-flight-sim
-```
-
-Origin CLI docs: [https://cursor.com/docs/origin/cli](https://cursor.com/docs/origin/cli)
-
-**GitHub** (after you publish a copy — see [Publish to GitHub](#publish-to-github)):
+**GitHub** 
 
 ```bash
 git clone https://github.com/user-0-py/pygame-flight-sim.git
