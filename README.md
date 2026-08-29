@@ -31,11 +31,18 @@ python main.py
 | `R` | Restart |
 | `Esc` | Quit |
 
-Hold throttle on Runway A until you lift off (~40 speed). Steer through gates
-1–4, then idle to descend onto Runway B and roll to a stop.
+Hold **W** on Runway A until you lift off (around speed 40). Steer through
+gates 1–4. Hold **S** to bring throttle down — it eases off, it does not snap
+to zero — then descend onto Runway B and roll to a stop.
 
-Altitude is a single number. Higher means a bigger plane and a longer shadow —
-there is no 3D camera.
+Throttle also climbs and descends: high throttle goes up, idle comes down.
+Altitude is one number. Higher means a bigger plane and a longer shadow.
+
+Tests (no window required):
+
+```bash
+python -m pytest
+```
 
 ## Ideas to extend
 
@@ -43,9 +50,3 @@ there is no 3D camera.
 - A little wind that drifts the plane sideways.
 - Flaps: a key that lets you fly slower on final.
 - A score based on how centered your landing was.
-
-Smoke test without opening a window:
-
-```bash
-python -m pytest tests/test_smoke.py
-```

@@ -12,6 +12,7 @@ from pysim.aircraft import Aircraft
 
 # Speeds are "pixels per second" so they match the map we draw.
 MAX_SPEED = 120.0
+MAX_ALTITUDE = 180.0
 ROTATE_SPEED = 40.0  # leave the ground at or above this
 STALL_SPEED = 32.0
 THRUST = 58.0
@@ -67,11 +68,11 @@ def step(plane: Aircraft, dt: float) -> None:
     if plane.speed < STALL_SPEED:
         climb = -30.0
     else:
-        climb = (plane.throttle - 0.42) * 48.0
+        climb = (plane.throttle - 0.42) * 28.0
         if plane.throttle < 0.12:
-            climb -= 10.0
+            climb -= 14.0
 
-    plane.altitude = max(0.0, plane.altitude + climb * dt)
+    plane.altitude = max(0.0, min(MAX_ALTITUDE, plane.altitude + climb * dt))
     if plane.altitude <= 0.0:
         plane.altitude = 0.0
         plane.airborne = False

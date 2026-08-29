@@ -18,6 +18,14 @@ def _turn_toward(heading: float, tx: float, ty: float, x: float, y: float) -> fl
     return 0.0
 
 
+def _want_throttle(plane_throttle: float, target: float) -> float:
+    if target > plane_throttle + 0.04:
+        return 1.0
+    if target < plane_throttle - 0.04:
+        return -1.0
+    return 0.0
+
+
 def _pilot(flight: Flight) -> tuple[float, float]:
     plane = flight.plane
     world: World = flight.world
@@ -28,18 +36,18 @@ def _pilot(flight: Flight) -> tuple[float, float]:
 
     if flight.phase == "path":
         gate = world.gates[min(flight.next_gate, len(world.gates) - 1)]
-        return _turn_toward(plane.heading, gate.x, gate.y, plane.x, plane.y), 0.72
+        turn = _turn_toward(plane.heading, gate.x, gate.y, plane.x, plane.y)
+        target = 0.55 if plane.altitude < 50.0 else 0.35
+        return turn, _want_throttle(plane.throttle, target)
 
-    target_x = world.runway_b.cx + 40.0
+    target_x = world.runway_b.cx + 80.0
     target_y = world.runway_b.cy
     turn = _turn_toward(plane.heading, target_x, target_y, plane.x, plane.y)
-    if plane.airborne and plane.altitude > 20.0:
-        throttle = 0.0
-    elif plane.airborne:
-        throttle = 0.05
-    else:
-        throttle = 0.0
-    return turn, throttle
+    if not plane.airborne:
+        return turn, -1.0
+    if plane.altitude > 18.0 or plane.speed > 70.0:
+        return turn, -1.0
+    return turn, _want_throttle(plane.throttle, 0.08)
 
 
 def test_scripted_pilot_completes_takeoff_path_landing():

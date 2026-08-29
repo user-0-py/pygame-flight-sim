@@ -6,9 +6,9 @@ from pysim.aircraft import Aircraft
 from pysim.phases.note import PhaseNote
 from pysim.world import World
 
-TOUCHDOWN_SPEED = 58.0
-ALIGN_RADIANS = 0.45  # ~26 degrees
-WIN_SPEED = 10.0
+TOUCHDOWN_SPEED = 80.0
+ALIGN_RADIANS = 0.55  # ~31 degrees
+WIN_SPEED = 12.0
 
 
 def check_landing(plane: Aircraft, world: World) -> PhaseNote:
