@@ -121,8 +121,8 @@ def _draw_path(surface: pygame.Surface, camera: Camera, world: World, next_gate:
         pos = camera.to_screen(gate.x, gate.y)
         r = max(8, int(camera.scale(gate.radius)))
         pygame.draw.circle(surface, color, pos, r, max(2, int(3 * camera.zoom)))
-        label = font.render(gate.label, True, HUD_BG)
-        surface.blit(label, (pos[0] - label.get_width() // 2, pos[1] - label.get_height() // 2))
+        number = font.render(str(gate.label), True, HUD_BG)
+        surface.blit(number, (pos[0] - number.get_width() // 2, pos[1] - number.get_height() // 2))
 
 
 def draw_hud(
