@@ -54,7 +54,7 @@ Origin CLI docs: [https://cursor.com/docs/origin/cli](https://cursor.com/docs/or
 **GitHub** (after you publish a copy — see [Publish to GitHub](#publish-to-github)):
 
 ```bash
-git clone https://github.com/ashwin-tewary/pygame-flight-sim.git
+git clone https://github.com/user-0-py/pygame-flight-sim.git
 cd pygame-flight-sim
 ```
 
@@ -140,12 +140,13 @@ Altitude is one number. Higher means a bigger plane and a longer shadow.
 
 This cloud session is signed into **Origin**, not GitHub, so the GitHub copy
 has to be created from a machine where you are logged in (`gh auth login`).
+GitHub user: **user-0-py**.
 
 From a clone of this repo:
 
 ```bash
 gh auth login
-gh repo create ashwin-tewary/pygame-flight-sim --private --source=. --remote=github --push
+gh repo create user-0-py/pygame-flight-sim --private --source=. --remote=github --push
 ```
 
 That creates a **private** GitHub repo, adds a `github` remote, and pushes the
