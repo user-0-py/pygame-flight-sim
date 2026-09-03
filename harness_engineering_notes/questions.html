@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Harness engineering — practice questions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f4efe4;
+      --paper: #fbf7ee;
+      --ink: #1c1914;
+      --muted: #5c564c;
+      --rule: #d7cfc0;
+      --accent: #8b2e1f;
+      --accent-2: #1f4d3a;
+      --good: #1f4d3a;
+      --bad: #8b2e1f;
+      --callout: #efe4c8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #efe6d2 0%, transparent 50%),
+        var(--bg);
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      line-height: 1.55;
+    }
+    .shell {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 48px 28px 96px;
+    }
+    h1 {
+      font-family: "Newsreader", Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.08;
+      margin: 0 0 12px;
+    }
+    .lede { font-size: 1.12rem; color: var(--muted); max-width: 62ch; }
+    .meta {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      padding: 10px 0;
+      margin: 22px 0 36px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .meta a { color: var(--accent-2); }
+    h2 {
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.65rem;
+      font-weight: 400;
+      margin: 2.2em 0 0.5em;
+    }
+    .q {
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      padding: 16px 18px 14px;
+      margin: 16px 0 22px;
+    }
+    .q h3 {
+      font-size: 1rem;
+      margin: 0 0 10px;
+      font-weight: 600;
+    }
+    .q .stem { margin: 0 0 12px; max-width: none; }
+    label.opt {
+      display: block;
+      padding: 7px 8px;
+      margin: 4px 0;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    label.opt:hover { background: #f3ead6; }
+    label.opt.correct { border-color: var(--good); background: #e5efe8; }
+    label.opt.wrong { border-color: var(--bad); background: #f6e6e2; }
+    .why {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: var(--callout);
+      font-size: 0.95rem;
+    }
+    .why.show { display: block; }
+    .sub .prompt { max-width: none; }
+    .marking {
+      margin-top: 10px;
+      border-top: 1px dashed var(--rule);
+      padding-top: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .marking summary {
+      cursor: pointer;
+      color: var(--accent-2);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 8px 0 28px;
+    }
+    button {
+      font-family: "IBM Plex Sans", sans-serif;
+      background: var(--ink);
+      color: var(--paper);
+      border: 0;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+    button.ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--rule);
+    }
+    #score {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 13px;
+    }
+    footer {
+      margin-top: 48px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--rule);
+      padding-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <h1>Practice questions on harness engineering</h1>
+    <p class="lede">
+      Multiple-choice items check definitions and failure modes. Subjective items
+      ask you to design, debug, or evaluate a harness. Answers for MCQs are
+      scored in the page; marking notes for written questions are behind a toggle.
+    </p>
+    <div class="meta">
+      <span>Companion: <a href="index.html">theory worksheet</a></span>
+      <span>Lab: <a href="notebooks/01_harness_from_scratch.ipynb">notebook + MLflow</a></span>
+    </div>
+
+    <h2 id="mcq">A. Multiple choice</h2>
+    <div class="toolbar">
+      <button type="button" id="grade">Grade MCQs</button>
+      <button type="button" class="ghost" id="clear">Clear</button>
+      <span id="score"></span>
+    </div>
+
+    <div class="q" data-answer="b">
+      <h3>Q1.</h3>
+      <p class="stem">An agent harness is best described as:</p>
+      <label class="opt"><input type="radio" name="q1" value="a" /> The fine-tuned weights that make a model follow tools.</label>
+      <label class="opt"><input type="radio" name="q1" value="b" /> The runtime that builds context, offers tools, executes or refuses calls, writes observations, and stops the episode.</label>
+      <label class="opt"><input type="radio" name="q1" value="c" /> The system prompt alone, if it is long enough.</label>
+      <label class="opt"><input type="radio" name="q1" value="d" /> The JSON Schema for a single function.</label>
+      <div class="why">The model proposes; the harness disposes. Prompts and schemas are inputs to that runtime, not substitutes for it.</div>
+    </div>
+
+    <div class="q" data-answer="c">
+      <h3>Q2.</h3>
+      <p class="stem">In a well-designed loop, a tool that throws <code>FileNotFoundError</code> should:</p>
+      <label class="opt"><input type="radio" name="q2" value="a" /> Crash the process so operators notice.</label>
+      <label class="opt"><input type="radio" name="q2" value="b" /> Silently skip the turn and ask the model again with the same messages.</label>
+      <label class="opt"><input type="radio" name="q2" value="c" /> Become a <code>role=tool</code> observation (an error string) so the next model turn can recover.</label>
+      <label class="opt"><input type="radio" name="q2" value="d" /> Be retried infinitely until it succeeds.</label>
+      <div class="why">Errors are observations. Collapse of the loop is a harness bug. Budgets still bound retries.</div>
+    </div>
+
+    <div class="q" data-answer="a">
+      <h3>Q3.</h3>
+      <p class="stem">Which stop reason is <em>not</em> a harness decision?</p>
+      <label class="opt"><input type="radio" name="q3" value="a" /> The model’s hidden chain-of-thought concluding that it is “done thinking.”</label>
+      <label class="opt"><input type="radio" name="q3" value="b" /> The assistant message contains no tool calls (<code>final_text</code>).</label>
+      <label class="opt"><input type="radio" name="q3" value="c" /> <code>max_steps</code> / token / wall-clock budget exhausted.</label>
+      <label class="opt"><input type="radio" name="q3" value="d" /> The user cancels the run.</label>
+      <div class="why">Internal “I am done thinking” is not an executable stop. The harness stops on empty tool_calls, budgets, or external halt — optionally a verifier.</div>
+    </div>
+
+    <div class="q" data-answer="d">
+      <h3>Q4.</h3>
+      <p class="stem">A system prompt says “never delete production.” The model still emits <code>rm_tree("/srv")</code>. What actually prevents the delete?</p>
+      <label class="opt"><input type="radio" name="q4" value="a" /> A larger context window.</label>
+      <label class="opt"><input type="radio" name="q4" value="b" /> Asking the model to repeat the policy in its answer.</label>
+      <label class="opt"><input type="radio" name="q4" value="c" /> Logging the call to MLflow after the files are gone.</label>
+      <label class="opt"><input type="radio" name="q4" value="d" /> A deterministic policy gate in the harness that refuses the tool before execution.</label>
+      <div class="why">Policy is code. Prompts request; gates enforce. Tracing records the block; it does not replace the block.</div>
+    </div>
+
+    <div class="q" data-answer="b">
+      <h3>Q5.</h3>
+      <p class="stem">Who owns context compaction (truncation, summarization, offloading)?</p>
+      <label class="opt"><input type="radio" name="q5" value="a" /> The model, via a special “forget” token.</label>
+      <label class="opt"><input type="radio" name="q5" value="b" /> The harness, as a deterministic (or separately evaluated) rewrite of the message tape.</label>
+      <label class="opt"><input type="radio" name="q5" value="c" /> The tool implementation, which must return at most 80 characters.</label>
+      <label class="opt"><input type="radio" name="q5" value="d" /> The user, by pasting less.</label>
+      <div class="why">The context window is a working tape with a hard length. The harness curates it so the goal is not drowned in logs.</div>
+    </div>
+
+    <div class="q" data-answer="c">
+      <h3>Q6.</h3>
+      <p class="stem">You log <code>success=1</code> because <code>stop_reason=final_text</code>, but the answer is factually wrong. What did you mix up?</p>
+      <label class="opt"><input type="radio" name="q6" value="a" /> Token count vs latency.</label>
+      <label class="opt"><input type="radio" name="q6" value="b" /> Training loss vs eval loss.</label>
+      <label class="opt"><input type="radio" name="q6" value="c" /> Loop-level success (clean stop) vs task-level verification (the answer is right).</label>
+      <label class="opt"><input type="radio" name="q6" value="d" /> Parent MLflow runs vs nested runs.</label>
+      <div class="why">The notebook’s MLflow lab splits <code>success</code> from <code>task_correct</code> for this reason. Agents can “finish” and still fail the job.</div>
+    </div>
+
+    <div class="q" data-answer="a">
+      <h3>Q7.</h3>
+      <p class="stem">In the MLflow mapping used in the lab, a nested run is the right place to record:</p>
+      <label class="opt"><input type="radio" name="q7" value="a" /> One tool dispatch: name, ok/error/block, payload size.</label>
+      <label class="opt"><input type="radio" name="q7" value="b" /> The company’s quarterly OKRs.</label>
+      <label class="opt"><input type="radio" name="q7" value="c" /> GPU firmware version only.</label>
+      <label class="opt"><input type="radio" name="q7" value="d" /> The full user PII dump from production.</label>
+      <div class="why">Parent run = episode (params, stop reason, transcript artifact). Nested run = tool span. Do not put secrets in traces.</div>
+    </div>
+
+    <div class="q" data-answer="d">
+      <h3>Q8.</h3>
+      <p class="stem">A golden-task eval for a file-research agent should primarily score:</p>
+      <label class="opt"><input type="radio" name="q8" value="a" /> How poetic the final sentence is.</label>
+      <label class="opt"><input type="radio" name="q8" value="b" /> Whether the mock model’s script is non-empty.</label>
+      <label class="opt"><input type="radio" name="q8" value="c" /> BLEU against a Wikipedia article.</label>
+      <label class="opt"><input type="radio" name="q8" value="d" /> Whether the trajectory used the right tools and a verifier finds the expected fact in the answer.</label>
+      <div class="why">Eval the trajectory and a checkable outcome. Harness tests (scripted tools, policy) are a separate, cheaper layer.</div>
+    </div>
+
+    <div class="q" data-answer="b">
+      <h3>Q9.</h3>
+      <p class="stem">The model emits a tool name that was never registered. The harness should:</p>
+      <label class="opt"><input type="radio" name="q9" value="a" /> Forward it to the OS anyway.</label>
+      <label class="opt"><input type="radio" name="q9" value="b" /> Return an in-band error listing valid names; do not crash.</label>
+      <label class="opt"><input type="radio" name="q9" value="c" /> Fine-tune the model immediately inside the request.</label>
+      <label class="opt"><input type="radio" name="q9" value="d" /> Drop the assistant message from history and pretend it did not happen.</label>
+      <div class="why">Tool hallucination is a characteristic failure. Recovery is the next model turn; the observation must be honest.</div>
+    </div>
+
+    <div class="q" data-answer="c">
+      <h3>Q10.</h3>
+      <p class="stem">Why keep a step budget even when the model is “usually right”?</p>
+      <label class="opt"><input type="radio" name="q10" value="a" /> Budgets improve grammar.</label>
+      <label class="opt"><input type="radio" name="q10" value="b" /> JSON Schema requires it.</label>
+      <label class="opt"><input type="radio" name="q10" value="c" /> Unbounded loops are a safety and cost failure mode (retries, duplicate tools, context rot).</label>
+      <label class="opt"><input type="radio" name="q10" value="d" /> MLflow cannot log more than eight metrics otherwise.</label>
+      <div class="why">Budgets are correctness, not pessimism. The tiny-budget MLflow run is the lab’s demonstration.</div>
+    </div>
+
+    <div class="q" data-answer="a">
+      <h3>Q11.</h3>
+      <p class="stem">“Propose / dispose” means:</p>
+      <label class="opt"><input type="radio" name="q11" value="a" /> The model may request any tool call; only the harness acts on the environment.</label>
+      <label class="opt"><input type="radio" name="q11" value="b" /> The user proposes prompts; legal dispose of the GPU.</label>
+      <label class="opt"><input type="radio" name="q11" value="c" /> Tools may call the model recursively without a depth limit.</label>
+      <label class="opt"><input type="radio" name="q11" value="d" /> Observations are optional if the call “looked successful.”</label>
+      <div class="why">The assistant message that requested tools is not the answer. The environment changes only through harness-executed (or refused) calls.</div>
+    </div>
+
+    <div class="q" data-answer="d">
+      <h3>Q12.</h3>
+      <p class="stem">A replayable harness test uses a mock model because:</p>
+      <label class="opt"><input type="radio" name="q12" value="a" /> Real models cannot call tools.</label>
+      <label class="opt"><input type="radio" name="q12" value="b" /> MLflow forbids network.</label>
+      <label class="opt"><input type="radio" name="q12" value="c" /> JSON Schema does not work with live APIs.</label>
+      <label class="opt"><input type="radio" name="q12" value="d" /> Scripted completions make the loop deterministic: same tool sequence, same stop reason, no API key.</label>
+      <div class="why">Replay beats folklore. Swap the mock for a vendor client later; do not rewrite the while-loop to “go to production.”</div>
+    </div>
+
+    <h2 id="subjective">B. Subjective / design</h2>
+    <p>Write answers on paper or in a notes app. Expand the marking note after you have attempted the question.</p>
+
+    <div class="q sub">
+      <h3>S1. Draw the loop (8 marks)</h3>
+      <p class="prompt">Write pseudocode for a harness loop with: system+user messages, optional compaction, <code>model.complete</code>, policy check, in-band tool errors, <code>final_text</code> vs <code>max_steps</code>. Annotate which lines the model is allowed to influence.</p>
+      <details class="marking"><summary>Marking note</summary>
+        Award for: bounded <code>for</code>/<code>while</code>; compaction owned by harness; append assistant before tools; refuse-or-execute; tool messages on errors; two stop paths. Deduct if the model writes the filesystem directly or if exceptions escape the loop.
+      </details>
+    </div>
+
+    <div class="q sub">
+      <h3>S2. Policy vs prompt (8 marks)</h3>
+      <p class="prompt">A coding agent has tools <code>read_file</code>, <code>write_file</code>, <code>run_tests</code>, and <code>shell</code>. Product requirement: it may not run <code>shell</code> on the host, only inside a disposable worktree, and must not read <code>.env</code>. Specify (i) prompt text you would still include, (ii) gates that must be code, (iii) one test you would write with a mock model.</p>
+      <details class="marking"><summary>Marking note</summary>
+        (i) Job, style, “prefer tests over shell.” (ii) Deny-list or hide <code>shell</code> on host; path jail; block <code>.env</code> in <code>read_file</code>; maybe approve writes. (iii) Scripted <code>read_file(".env")</code> → observation starts with ERROR, no file bytes, <code>policy_block</code> in the trace/MLflow nested run.
+      </details>
+    </div>
+
+    <div class="q sub">
+      <h3>S3. Failure mode (7 marks)</h3>
+      <p class="prompt">An agent lists a directory, then reads the same 2&nbsp;MB log on every subsequent turn until the context fills and it forgets the user’s question. Name the failure, propose two harness changes, and say what MLflow metrics/artifacts you would inspect first.</p>
+      <details class="marking"><summary>Marking note</summary>
+        Context rot / looping. Changes: truncate or offload tool payloads; duplicate-call detector; pin the user goal; step budget. Inspect: nested runs with repeated <code>read_file</code> and growing <code>n_chars</code>; parent <code>steps</code>; <code>transcript.json</code> tail vs system message.
+      </details>
+    </div>
+
+    <div class="q sub">
+      <h3>S4. Two-layer eval (8 marks)</h3>
+      <p class="prompt">Design an evaluation plan for a “checkout on-call” file agent like the toy workspace. Split harness tests vs golden tasks vs a possible live-model smoke. State what would fail CI.</p>
+      <details class="marking"><summary>Marking note</summary>
+        Harness: unknown tool, policy deny, max_steps, path escape — mock only. Golden: list then read RUNBOOK, answer contains on-call channel; <code>task_correct</code>. Live smoke: optional, not CI-blocking if flaky. CI fails on harness regressions and golden trajectory/verifier, not on prose style.
+      </details>
+    </div>
+
+    <div class="q sub">
+      <h3>S5. MLflow experiment design (7 marks)</h3>
+      <p class="prompt">You want to know whether raising <code>max_steps</code> from 4 to 12 improves a 50-task file-QA suite. Describe parent-run params, metrics (including a verifier), how nested runs help debug a failing task, and one comparison you must not treat as causal without a controlled change.</p>
+      <details class="marking"><summary>Marking note</summary>
+        Params: max_steps, tool set version, policy, prompt hash. Metrics: task_correct mean, success rate, steps, policy_block rate, latency/cost if available. Nested runs: which tool failed. Do not attribute a jump in task_correct to max_steps if the prompt and model also changed in the same experiment.
+      </details>
+    </div>
+
+    <div class="q sub">
+      <h3>S6. Replace the model (6 marks)</h3>
+      <p class="prompt">List the interface of <code>complete(messages, tools) -&gt; assistant_message</code> and argue in half a page why a vendor SDK should be an adapter behind that interface rather than the body of the while-loop.</p>
+      <details class="marking"><summary>Marking note</summary>
+        Messages in, assistant with text and/or tool_calls out. Adapter serializes schemas and parses the vendor message. Loop, policy, compaction, MLflow stay stable so tests and traces remain comparable across models.
+      </details>
+    </div>
+
+    <div class="q sub">
+      <h3>S7. Least privilege (6 marks)</h3>
+      <p class="prompt">Contrast three environments for the same “fix a unit test” job: (1) login shell on a laptop, (2) throwaway git worktree with read/write to that tree only, (3) read-only tools plus a patch applicator. Which harness is easiest to evaluate and why?</p>
+      <details class="marking"><summary>Marking note</summary>
+        (1) unbounded blast radius. (2) standard coding-agent jail. (3) even narrower, easier replay and SWE-bench-like scoring (apply patch, run tests). Easier eval when the environment is small, resettable, and side effects are typed.
+      </details>
+    </div>
+
+    <div class="q sub">
+      <h3>S8. Trace minimum (5 marks)</h3>
+      <p class="prompt">Write a checklist of events a production harness must emit for one episode. For each event, one field you would redact.</p>
+      <details class="marking"><summary>Marking note</summary>
+        run_start/end (user text — redact secrets), model_turn (prompt — redact keys), tool_ok/error (return body — redact tokens), policy_block (arguments — redact paths with credentials). Stop reason and step count are not optional.
+      </details>
+    </div>
+
+    <footer>
+      Grade only section A in-browser (12 questions). Section B is written.
+      Theory: <a href="index.html">index.html</a>.
+    </footer>
+  </div>
+  <script>
+    const questions = [...document.querySelectorAll(".q[data-answer]")];
+    function grade() {
+      let ok = 0;
+      questions.forEach((q) => {
+        const key = q.dataset.answer;
+        q.querySelectorAll("label.opt").forEach((lab) => {
+          lab.classList.remove("correct", "wrong");
+          const input = lab.querySelector("input");
+          if (input.value === key) lab.classList.add("correct");
+          if (input.checked && input.value !== key) lab.classList.add("wrong");
+        });
+        const picked = q.querySelector("input:checked");
+        if (picked && picked.value === key) ok += 1;
+        q.querySelector(".why").classList.add("show");
+      });
+      document.getElementById("score").textContent =
+        ok + " / " + questions.length + " correct";
+    }
+    function clearAll() {
+      questions.forEach((q) => {
+        q.querySelectorAll("input").forEach((i) => { i.checked = false; });
+        q.querySelectorAll("label.opt").forEach((lab) => lab.classList.remove("correct", "wrong"));
+        q.querySelector(".why").classList.remove("show");
+      });
+      document.getElementById("score").textContent = "";
+    }
+    document.getElementById("grade").addEventListener("click", grade);
+    document.getElementById("clear").addEventListener("click", clearAll);
+  </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "service": "checkout-service",
+  "region": "us-east-1",
+  "dependencies": ["payments-api", "cart-cache", "inventory"]
+}

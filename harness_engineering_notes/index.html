@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent harnesses — theory notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f4efe4;
+      --paper: #fbf7ee;
+      --ink: #1c1914;
+      --muted: #5c564c;
+      --rule: #d7cfc0;
+      --accent: #8b2e1f;
+      --accent-2: #1f4d3a;
+      --code-bg: #ece6d8;
+      --callout: #efe4c8;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #efe6d2 0%, transparent 50%),
+        var(--bg);
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      line-height: 1.55;
+    }
+    .shell {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 820px);
+      gap: 48px;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 48px 28px 96px;
+    }
+    nav {
+      position: sticky;
+      top: 28px;
+      align-self: start;
+      font-size: 13px;
+    }
+    nav .brand {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+    nav a {
+      display: block;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 4px 0;
+    }
+    nav a:hover { color: var(--ink); }
+    header h1 {
+      font-family: "Newsreader", Georgia, serif;
+      font-size: clamp(2.1rem, 5vw, 3.4rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.08;
+      margin: 0 0 12px;
+    }
+    .lede {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 62ch;
+      margin-bottom: 28px;
+    }
+    .meta {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      padding: 10px 0;
+      margin-bottom: 40px;
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    h2 {
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.7rem;
+      font-weight: 400;
+      margin: 2.4em 0 0.6em;
+      scroll-margin-top: 24px;
+    }
+    h3 {
+      font-size: 1.05rem;
+      margin: 1.6em 0 0.45em;
+    }
+    p { max-width: 68ch; }
+    a { color: var(--accent-2); }
+    .figure {
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      padding: 18px 20px;
+      margin: 22px 0;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12.5px;
+      line-height: 1.45;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .callout {
+      background: var(--callout);
+      border-left: 3px solid var(--accent);
+      padding: 14px 16px;
+      margin: 22px 0;
+      max-width: 70ch;
+    }
+    .callout strong { font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: 0.04em; }
+    table {
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      margin: 18px 0 28px;
+      width: 100%;
+    }
+    th, td {
+      border-bottom: 1px solid var(--rule);
+      text-align: left;
+      padding: 8px 10px 8px 0;
+      vertical-align: top;
+    }
+    th { font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 500; }
+    code, .mono { font-family: "IBM Plex Mono", monospace; font-size: 0.86em; }
+    ol.principles { max-width: 68ch; padding-left: 1.2em; }
+    ol.principles li { margin: 0.55em 0; }
+    footer {
+      margin-top: 64px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--rule);
+      padding-top: 16px;
+    }
+    @media (max-width: 860px) {
+      .shell { grid-template-columns: 1fr; gap: 12px; padding-top: 24px; }
+      nav { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav>
+      <div class="brand">Harness notes</div>
+      <a href="#claim">The claim</a>
+      <a href="#anatomy">Anatomy</a>
+      <a href="#loop">The loop</a>
+      <a href="#tools">Tools</a>
+      <a href="#context">Context</a>
+      <a href="#policy">Policy</a>
+      <a href="#observe">Observability</a>
+      <a href="#eval">Evaluation</a>
+      <a href="#failures">Failure modes</a>
+      <a href="#principles">Principles</a>
+      <a href="#map">Theory → notebook</a>
+      <a href="questions.html">Practice questions</a>
+    </nav>
+    <article>
+      <header>
+        <h1>The theory of harnesses for AI agents</h1>
+        <p class="lede">
+          A language model is a next-token machine. An agent is that machine
+          placed inside a loop that can act, observe, and stop. The
+          <em>harness</em> is everything in that loop that is not the model.
+        </p>
+        <div class="meta">
+          <span>Engineering notes</span>
+          <span>Companion: <code>notebooks/01_harness_from_scratch.ipynb</code></span>
+        </div>
+      </header>
+
+      <h2 id="claim">1. The claim</h2>
+      <p>
+        Most of what people call “agent intelligence” in production is not a
+        special model. It is ordinary model capacity plus a carefully designed
+        <strong>control program</strong>: prompts, tool schemas, permission
+        checks, retries, memory, traces, and stop conditions. That control
+        program is the harness.
+      </p>
+      <p>
+        The distinction matters. If you treat the model as the product, you
+        tune prompts forever and still get silent loops, invented filenames,
+        and unbounded tool use. If you treat the harness as the product, the
+        model becomes a replaceable planner inside a typed, observable,
+        policy-bounded process.
+      </p>
+      <div class="callout">
+        <strong>DEFINITION.</strong>
+        An agent harness is the runtime that (1) constructs model context,
+        (2) offers tools, (3) executes or refuses tool calls, (4) writes
+        observations back into context, and (5) decides when the episode is
+        over. The model proposes; the harness disposes.
+      </div>
+      <p>
+        This is the same idea as a process supervisor in operating systems, or
+        a game loop in simulation: a thin, deterministic outer program around
+        a rich, stochastic inner component. Reliability lives in the outer
+        program.
+      </p>
+
+      <h2 id="anatomy">2. Anatomy: model, agent, harness, environment</h2>
+      <p>Four layers are easy to conflate. Keep them separate:</p>
+      <table>
+        <thead>
+          <tr><th>Layer</th><th>What it is</th><th>What it must not be</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Model</td>
+            <td>A function from messages (+ tool specs) to an assistant message.</td>
+            <td>The source of truth for permissions, time, or filesystem state.</td>
+          </tr>
+          <tr>
+            <td>Harness</td>
+            <td>The loop, registry, policies, context manager, tracer, stop rules.</td>
+            <td>A pile of prompt text with no executable invariants.</td>
+          </tr>
+          <tr>
+            <td>Agent</td>
+            <td>Harness + system prompt + tool set + model, aimed at a job.</td>
+            <td>A chatbot with extra adjectives.</td>
+          </tr>
+          <tr>
+            <td>Environment</td>
+            <td>The world tools can touch: repo, browser, APIs, tickets.</td>
+            <td>Something the model can “imagine” into existence.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Historically the stack grew in public: chain-of-thought, then ReAct
+        (reason + act interleaved with observations), then native function
+        calling, then long-running coding agents (SWE-bench style scaffolds,
+        IDE agents, terminal agents). The model improved, but the
+        <em>shape</em> of the system stayed: propose action → execute → observe
+        → repeat.
+      </p>
+
+      <h2 id="loop">3. The control loop</h2>
+      <p>
+        Every serious harness is a while-loop with a budget. Pseudocode is
+        the theory:
+      </p>
+      <div class="figure">messages ← [system, user]
+for step in 1..max_steps:
+    if context is too large:
+        messages ← compact(messages)          # harness owns memory
+    assistant ← model.complete(messages, tools)
+    append assistant
+    if assistant has no tool_calls:
+        return assistant.text                 # clean stop
+    for each call in assistant.tool_calls:
+        if policy.refuses(call):
+            observation ← error(reason)       # never throw out of the loop
+        else:
+            observation ← execute(call)       # environment is real
+        append tool message(observation)
+return timeout                                # budget stop</div>
+      <p>
+        Three stop conditions cover almost all designs:
+      </p>
+      <ol>
+        <li><strong>Final text</strong> — the model emits no tool calls.</li>
+        <li><strong>Budget</strong> — max steps, max tokens, max wall time, max dollars.</li>
+        <li><strong>External halt</strong> — user cancel, CI timeout, sandbox death.</li>
+      </ol>
+      <p>
+        A fourth, rarer stop is <em>goal detector</em>: a verifier (tests,
+        rubric, compiler) says the task is done even if the model wants to
+        keep talking. Verifiers belong in the harness, not in the prompt.
+      </p>
+      <div class="callout">
+        <strong>INVARIANT.</strong>
+        Tool execution is synchronous from the model’s point of view. The
+        assistant message that requested tools is not “the answer.” The
+        answer is whatever the harness returns after observations have been
+        folded back in — or a structured failure if the budget expires.
+      </div>
+
+      <h2 id="tools">4. Tools as a protocol, not a bag of functions</h2>
+      <p>
+        A tool is a contract with four parts: <code>name</code>,
+        <code>description</code> (for the model), <code>parameters</code>
+        (JSON Schema), and an implementation (for the runtime). The model
+        never calls Python. It emits a <em>tool call object</em>. The harness
+        binds that object to code.
+      </p>
+      <p>Good tools are:</p>
+      <ul>
+        <li><strong>Narrow.</strong> <code>read_file(path)</code> beats <code>do_anything(cmd)</code> when you can afford it.</li>
+        <li><strong>Observable.</strong> Return text the model can use next turn; include errors in-band.</li>
+        <li><strong>Idempotent where possible.</strong> Retries are normal.</li>
+        <li><strong>Side-effect labeled.</strong> Reads vs writes vs irreversible ops should be obvious to policy.</li>
+      </ul>
+      <p>
+        Errors must become <em>observations</em>, not exceptions that kill the
+        process. Unknown tool names, bad arguments, timeouts, and policy
+        refusals are all just strings in a <code>role=tool</code> message.
+        The model’s next turn is how the agent recovers. The harness’s job
+        is to make recovery possible and to bound how long recovery may take.
+      </p>
+      <p>
+        Parallel tool calls are an optimization, not a new theory: the
+        harness may execute independent reads concurrently, then append
+        several tool messages before the next <code>complete()</code>. Writes
+        usually stay serial.
+      </p>
+
+      <h2 id="context">5. Context is a scarce, managed resource</h2>
+      <p>
+        The context window is not “memory.” It is a working tape with a hard
+        length. Left unmanaged, tool output (logs, HTML, stack traces) will
+        crowd out the goal. Context engineering is therefore a harness
+        responsibility:
+      </p>
+      <table>
+        <thead>
+          <tr><th>Technique</th><th>When to use it</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Truncation</td>
+            <td>Tool payloads over a character/token cap; keep head + tail.</td>
+          </tr>
+          <tr>
+            <td>Offloading</td>
+            <td>Write bulky artifacts to files; leave a path + summary in context.</td>
+          </tr>
+          <tr>
+            <td>Summarization</td>
+            <td>Compress older turns into a rolling “state of the episode.”</td>
+          </tr>
+          <tr>
+            <td>Retrieval</td>
+            <td>Pull only the files/tickets likely relevant to the current subgoal.</td>
+          </tr>
+          <tr>
+            <td>Pinned prefix</td>
+            <td>System prompt, tool list, and non-negotiable policies always stay.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        A useful mental model is <em>attention as a budget</em>. Every token
+        you keep is a token the model might use instead of the user’s goal.
+        Compaction is not an optimization bolted on later; it is how long
+        episodes remain coherent.
+      </p>
+
+      <h2 id="policy">6. Policy sits outside the prompt</h2>
+      <p>
+        System prompts can <em>ask</em> the model not to delete production.
+        Only the harness can <em>prevent</em> it. Policy is a deterministic
+        gate on tool names, argument size, paths, network, and credentials:
+      </p>
+      <ul>
+        <li>Allow-lists and deny-lists of tools.</li>
+        <li>Path jail (workspace root) for filesystem tools.</li>
+        <li>No secrets in traces; redact before logging.</li>
+        <li>Human approval for high-impact writes, if the product requires it.</li>
+      </ul>
+      <p>
+        Least privilege is the same as in ordinary software: give the agent
+        the smallest environment that can still do the job. A coding agent
+        in a throwaway worktree is a different creature from a chatbot with
+        a live shell on your laptop.
+      </p>
+
+      <h2 id="observe">7. If you cannot see the trajectory, you cannot improve it</h2>
+      <p>
+        An episode is a trajectory: messages, tool calls, latencies, token
+        counts, stop reason. Tracing is not “nice to have.” It is how you
+        debug an agent. Minimum viable trace:
+      </p>
+      <ul>
+        <li><code>run_start</code> / <code>run_end</code> with stop reason and step count.</li>
+        <li>Each model turn (hash of prompt, number of tool calls, output tokens).</li>
+        <li>Each tool success or in-band error (name, duration, bytes returned).</li>
+        <li>Each policy block (the most important events in production).</li>
+      </ul>
+      <p>
+        Transcripts should be replayable: given the same mock model script
+        (or recorded completions) the harness should produce the same
+        sequence of tool executions. That property is what makes tests
+        possible.
+      </p>
+
+      <h2 id="eval">8. Evaluation is a second harness</h2>
+      <p>
+        You cannot unit-test “intelligence,” but you can unit-test the
+        harness and score the agent:
+      </p>
+      <ol>
+        <li><strong>Harness tests</strong> — mock model, scripted tool calls, assert stop reasons, policy blocks, and error-as-observation. No network.</li>
+        <li><strong>Golden tasks</strong> — small environments with a known answer (on-call from a runbook, a failing test to patch).</li>
+        <li><strong>Rubrics / verifiers</strong> — tests pass, diff is small, citation exists in retrieved files.</li>
+        <li><strong>Regression suites</strong> — pin trajectories that used to fail; fail CI if stop_reason or safety gates change.</li>
+      </ol>
+      <p>
+        SWE-bench-style evaluation is this idea at scale: a harness checks
+        out a repo, lets an agent patch it, and runs the project’s tests.
+        The benchmark is as much a statement about harness quality (timeouts,
+        patch application, isolation) as about the model.
+      </p>
+
+      <h2 id="failures">9. Characteristic failure modes</h2>
+      <table>
+        <thead>
+          <tr><th>Failure</th><th>What you see</th><th>Harness response</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tool hallucination</td>
+            <td>Call to a name that was never registered.</td>
+            <td>In-band error listing valid names; do not crash.</td>
+          </tr>
+          <tr>
+            <td>Argument drift</td>
+            <td>Wrong types, missing fields, huge payloads.</td>
+            <td>Schema check; truncate; error string.</td>
+          </tr>
+          <tr>
+            <td>Looping</td>
+            <td>Same tool, same args, no progress.</td>
+            <td>Step budget; optional duplicate-call detector.</td>
+          </tr>
+          <tr>
+            <td>Context rot</td>
+            <td>Model forgets the user goal under log spam.</td>
+            <td>Compaction; pin the goal; offload blobs.</td>
+          </tr>
+          <tr>
+            <td>Premature stop</td>
+            <td>Final text before tools were used.</td>
+            <td>Prompting helps; eval catches it; optional “must-use-tool” tasks.</td>
+          </tr>
+          <tr>
+            <td>Over-acting</td>
+            <td>Writes when a read would do.</td>
+            <td>Policy; split read/write tools; approval for writes.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="principles">10. Design principles</h2>
+      <ol class="principles">
+        <li><strong>The harness is the product.</strong> Swap models; keep the loop, policies, and traces stable.</li>
+        <li><strong>Propose / dispose.</strong> The model may request anything; only the harness acts.</li>
+        <li><strong>Errors are observations.</strong> Recovery is a model turn. Collapse is a harness bug.</li>
+        <li><strong>Budgets are correctness.</strong> Unbounded loops are not “thorough,” they are unsafe.</li>
+        <li><strong>Context is curated.</strong> If the tape is dirty, reasoning will be too.</li>
+        <li><strong>Policy is code.</strong> Promises in English are not controls.</li>
+        <li><strong>Tools are small and typed.</strong> A sharp interface is easier to evaluate and to jail.</li>
+        <li><strong>Every run has a stop reason.</strong> <code>final_text</code>, <code>max_steps</code>, <code>cancelled</code> — never a shrug.</li>
+        <li><strong>Replay beats folklore.</strong> Scripted models make the loop testable.</li>
+        <li><strong>Eval the trajectory, not the vibe.</strong> Did it call the right tool? Did tests pass?</li>
+      </ol>
+
+      <h2 id="map">11. How the notebook implements this</h2>
+      <p>
+        The companion notebook builds a harness in layers, matching the
+        sections above:
+      </p>
+      <ol>
+        <li>Messages and a mock model (no API key).</li>
+        <li>A tool registry and in-band errors.</li>
+        <li>The step loop with <code>max_steps</code>.</li>
+        <li>A policy gate.</li>
+        <li>A tracer.</li>
+        <li>Naive context compaction.</li>
+        <li>A tiny file-backed agent over <code>examples/toy_workspace</code>.</li>
+        <li>A packaged runtime in <code>src/agent_harness</code> with pytest coverage.</li>
+        <li>MLflow: parent run per episode, nested runs per tool, <code>success</code> vs <code>task_correct</code>.</li>
+      </ol>
+      <p>
+        Practice: <a href="questions.html">questions.html</a> (MCQ + written).
+      </p>
+      <p>
+        When you later attach a real model, you should only replace
+        <code>MockToolModel.complete</code>. If you have to rewrite the loop
+        to “go to production,” the theory was not in the harness yet.
+      </p>
+
+      <footer>
+        Open <code>index.html</code> in a browser. Practice at
+        <code>questions.html</code>. Run the notebook after
+        <code>pip install -r requirements.txt</code>. Tests:
+        <code>PYTHONPATH=src pytest tests</code>.
+      </footer>
+    </article>
+  </div>
+</body>
+</html>
