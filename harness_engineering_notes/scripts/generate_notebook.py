@@ -492,8 +492,104 @@ class OpenAICompatModel:
 ```
 
 If wiring a vendor forces you to rewrite the while-loop, the theory never made it into the harness.
+"""
+)
 
-**Next:** open `../index.html` for the full argument, then run `PYTHONPATH=src pytest tests` from the notes root.
+md(
+    """## Step 11 — MLflow: the harness owns the experiment
+
+Observability is not `print`. Production harnesses log **params** (knobs you chose), **metrics** (what the episode did), **tags** (stop reason), and **artifacts** (the transcript you can replay).
+
+MLflow models that as:
+
+- one **parent run** per agent episode
+- **nested runs** per tool dispatch (`tool_ok`, `tool_error`, `policy_block`)
+- a local SQLite store (`mlruns/mlflow.db`) so this notebook needs no server and no cloud account
+
+We log three scripted episodes under one experiment and compare them like you would compare model checkpoints — except the unit of comparison is the *harness configuration*, not the weights.
+"""
+)
+
+code(
+    '''from agent_harness import HarnessConfig, InMemoryTracer, Policy, configure_local_tracking, log_harness_run, search_experiment_table
+
+MLRUNS = ROOT / "mlruns"
+uri = configure_local_tracking(MLRUNS)
+print("tracking uri:", uri)
+
+EXPERIMENT = "harness-engineering-lab"
+
+
+def file_agent(script, *, max_steps=8, denied=()):
+    model = HMock(list(script))
+    return AgentHarness(
+        model=model,
+        tools=registry,
+        system_prompt="Answer only from workspace files. Prefer list_files then read_file.",
+        policy=Policy(denied_tools=frozenset(denied)),
+        config=HarnessConfig(max_steps=max_steps),
+        tracer=InMemoryTracer(),
+    )
+
+
+happy_script = [
+    HMessage(role="assistant", tool_calls=[HToolCall("1", "list_files", {})]),
+    HMessage(role="assistant", tool_calls=[HToolCall("2", "read_file", {"path": "RUNBOOK.md"})]),
+    HMessage(role="assistant", content="On-call for checkout-service is #infra-oncall."),
+]
+budget_script = [
+    HMessage(role="assistant", tool_calls=[HToolCall("1", "list_files", {})]),
+    HMessage(role="assistant", tool_calls=[HToolCall("2", "read_file", {"path": "RUNBOOK.md"})]),
+    HMessage(role="assistant", content="should not reach here"),
+]
+blocked_script = [
+    HMessage(role="assistant", tool_calls=[HToolCall("1", "read_file", {"path": "RUNBOOK.md"})]),
+    HMessage(role="assistant", content="Policy blocked the read; I cannot answer from files."),
+]
+
+cases = [
+    ("happy-path", file_agent(happy_script, max_steps=8), "Who is on-call for checkout-service?", "#infra-oncall"),
+    ("tiny-budget", file_agent(budget_script, max_steps=1), "Who is on-call for checkout-service?", "#infra-oncall"),
+    ("read-denied", file_agent(blocked_script, denied=("read_file",)), "Who is on-call?", "#infra-oncall"),
+]
+
+for name, harness, question, gold in cases:
+    outcome = harness.run(question)
+    correct = 1.0 if gold in outcome.final_text else 0.0
+    run_id = log_harness_run(
+        outcome,
+        experiment=EXPERIMENT,
+        run_name=name,
+        harness=harness,
+        extra_metrics={"task_correct": correct},
+        extra_params={"gold_needle": gold},
+    )
+    print(f"{name:12} stop={outcome.stop_reason:12} steps={outcome.steps} correct={int(correct)} run={run_id[:8]}")
+
+print("\\nparent runs")
+for row in search_experiment_table(EXPERIMENT):
+    print(row)
+'''
+)
+
+md(
+    """Read that table as harness engineering, not ML folklore:
+
+| run | what it teaches |
+| --- | --- |
+| `happy-path` | episode completed (`success=1`) *and* the verifier passed (`task_correct=1`) |
+| `tiny-budget` | budgets are correctness: `stop_reason=max_steps`, task fails even though the model wanted to continue |
+| `read-denied` | policy is code: a tool call became `policy_block`, the model produced text, the **task** still failed |
+
+`task_correct` is a *verifier metric* the harness computes. `success` only means “the loop exited cleanly.” Mixing those two numbers is how teams ship agents that “finished” and were wrong.
+
+Artifacts `transcript.json` and `trace_events.json` sit on the parent run for replay. Nested runs are the tool-level spans.
+
+```bash
+mlflow ui --backend-store-uri "sqlite:///$PWD/mlruns/mlflow.db"
+```
+
+Then compare the three parent runs in the UI. **Next:** [`../questions.html`](../questions.html) for practice questions; [`../index.html`](../index.html) for the theory.
 """
 )
 

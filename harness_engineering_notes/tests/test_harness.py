@@ -15,6 +15,7 @@ if str(SRC) not in sys.path:
 from agent_harness import (  # noqa: E402
     AgentHarness,
     HarnessConfig,
+    InMemoryTracer,
     Message,
     MockToolModel,
     Policy,
@@ -215,3 +216,40 @@ def test_file_agent_answers_from_runbook():
     assert "#infra-oncall" in result.final_text
     listed = next(m.content for m in result.messages if m.role == "tool" and m.name == "list_files")
     assert "RUNBOOK.md" in listed
+
+
+def test_mlflow_logs_parent_and_nested_tool_runs(tmp_path: Path):
+    from agent_harness import configure_local_tracking, log_harness_run, search_experiment_table
+
+    uri = configure_local_tracking(tmp_path / "mlruns")
+    assert uri.startswith("sqlite:")
+    model = MockToolModel(
+        [
+            Message(
+                role="assistant",
+                tool_calls=[ToolCall(id="c1", name="echo", arguments={"text": "ping"})],
+            ),
+            Message(role="assistant", content="pong"),
+        ]
+    )
+    harness = AgentHarness(
+        model=model,
+        tools=_echo_registry(),
+        system_prompt="echo then stop",
+        tracer=InMemoryTracer(),
+    )
+    result = harness.run("ping")
+    run_id = log_harness_run(
+        result,
+        experiment="harness-unit",
+        run_name="echo-happy-path",
+        harness=harness,
+        extra_metrics={"task_correct": 1.0},
+    )
+    assert run_id
+    table = search_experiment_table("harness-unit")
+    assert len(table) == 1
+    assert table[0]["run_name"] == "echo-happy-path"
+    assert table[0]["stop_reason"] == "final_text"
+    assert table[0]["tool_ok"] == 1.0
+    assert table[0]["task_correct"] == 1.0

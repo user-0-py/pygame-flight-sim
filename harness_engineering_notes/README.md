@@ -15,10 +15,11 @@ rsync -a harness_engineering_notes/ harness_engineering_notes-repo/ --exclude sc
 
 | Path | What it is |
 | --- | --- |
-| [`index.html`](index.html) | Theory: model vs harness vs agent, the control loop, tools, context, policy, observability, eval, failure modes |
-| [`notebooks/01_harness_from_scratch.ipynb`](notebooks/01_harness_from_scratch.ipynb) | Step-by-step build, fully offline via a scripted mock model |
-| [`src/agent_harness/`](src/agent_harness) | The same loop as a small importable package |
-| [`tests/test_harness.py`](tests/test_harness.py) | Harness unit tests + a golden file-research task |
+| [`index.html`](index.html) | Theory worksheet |
+| [`questions.html`](questions.html) | MCQ (auto-graded) + subjective practice |
+| [`notebooks/01_harness_from_scratch.ipynb`](notebooks/01_harness_from_scratch.ipynb) | Step-by-step harness + local MLflow experiment |
+| [`src/agent_harness/`](src/agent_harness) | Importable loop, policy, MLflow helpers |
+| [`tests/test_harness.py`](tests/test_harness.py) | Harness unit tests, golden task, MLflow logging |
 | [`examples/toy_workspace/`](examples/toy_workspace) | Tiny fake service wiki the demo agent reads |
 
 ## Setup

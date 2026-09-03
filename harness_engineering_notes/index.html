@@ -161,6 +161,7 @@
       <a href="#failures">Failure modes</a>
       <a href="#principles">Principles</a>
       <a href="#map">Theory → notebook</a>
+      <a href="questions.html">Practice questions</a>
     </nav>
     <article>
       <header>
@@ -477,7 +478,11 @@ return timeout                                # budget stop</div>
         <li>Naive context compaction.</li>
         <li>A tiny file-backed agent over <code>examples/toy_workspace</code>.</li>
         <li>A packaged runtime in <code>src/agent_harness</code> with pytest coverage.</li>
+        <li>MLflow: parent run per episode, nested runs per tool, <code>success</code> vs <code>task_correct</code>.</li>
       </ol>
+      <p>
+        Practice: <a href="questions.html">questions.html</a> (MCQ + written).
+      </p>
       <p>
         When you later attach a real model, you should only replace
         <code>MockToolModel.complete</code>. If you have to rewrite the loop
@@ -485,7 +490,8 @@ return timeout                                # budget stop</div>
       </p>
 
       <footer>
-        Open <code>index.html</code> in a browser. Run the notebook after
+        Open <code>index.html</code> in a browser. Practice at
+        <code>questions.html</code>. Run the notebook after
         <code>pip install -r requirements.txt</code>. Tests:
         <code>PYTHONPATH=src pytest tests</code>.
       </footer>

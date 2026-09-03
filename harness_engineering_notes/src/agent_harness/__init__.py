@@ -6,6 +6,7 @@ from .models import Message, MockToolModel, ToolCall, ToolSpec
 from .policies import Policy, default_policy
 from .tools import ToolError, ToolRegistry
 from .tracing import InMemoryTracer, TraceEvent
+from .mlflow_tracking import configure_local_tracking, log_harness_run, search_experiment_table
 
 __all__ = [
     "AgentHarness",
@@ -21,5 +22,8 @@ __all__ = [
     "ToolSpec",
     "TraceEvent",
     "compact_messages",
+    "configure_local_tracking",
     "default_policy",
+    "log_harness_run",
+    "search_experiment_table",
 ]
